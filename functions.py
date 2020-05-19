@@ -38,7 +38,7 @@ def getFinanceData(id, start, end, interval):
            "&events=history" \
            "&crumb=hP2rOschxO0"
     response = requests.get(site)
-    #print(site)
+    print(site)
     return response
 
 

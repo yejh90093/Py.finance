@@ -31,14 +31,15 @@ process = 0
 #print(all.keys())
 
 for value in all.values:
-    # value[0] = "2887F"
-    # print (process, value[0], value[1])
+    #value[0] = "4142"
+    #print (process, value[0], value[1])
 
     tempArr.append(value[0])
     nameArr.append(value[1])
 
     responseDay = functions.getFinanceData(value[0], dayStart, dayEnd, "1d")
     dataArrayDay = functions.dataTextToArray(responseDay.text)
+    print (dataArrayDay)
 
     arrWilliamsR = functions.arrayWilliamsR(dataArrayDay, 50)
     arrRSI = functions.arrayRSI(dataArrayDay, 60)
@@ -54,6 +55,8 @@ for value in all.values:
     dataArrayMonth = functions.dataTextToArray(responseMonth.text)
     dataArrayMonth = np.delete(dataArrayMonth, len(dataArrayMonth) - 2, axis=0)
 
+    # print (dataArrayMonth)
+
     arrRSIMonth = functions.arrayRSI(dataArrayMonth, 4)
     if len(arrRSIMonth) <= 1:
         monthRSI = None
@@ -65,8 +68,8 @@ for value in all.values:
     process = process + 1
     pbar.update(1)
 
-#    if process > 10:
-#        break
+    #if process > 10:
+    #    break
 
 
 resultDic['monthRSI'] = monthRSIArr
@@ -76,10 +79,12 @@ resultDic[all.keys()[1]] = nameArr
 resultDic[all.keys()[0]] = tempArr
 
 resultDF = pd.DataFrame(resultDic)
-
 pbar.close()
-print (resultDF)
 
+# print (resultDF)
 
-#for dfValue in resultDF.values:
-#    print (dfValue[1])
+accordDic = resultDF[resultDF.monthRSI > 77]
+accordDic = accordDic[accordDic.dayRSI > 57]
+accordDic = accordDic[accordDic.dayWilliamsR < 20]
+
+print (accordDic)
