@@ -5,6 +5,7 @@ import time
 import math
 import pandas as pd
 import functions
+import xlwt
 import numpy as np
 from tqdm import tqdm
 
@@ -39,7 +40,7 @@ for value in all.values:
 
     responseDay = functions.getFinanceData(value[0], dayStart, dayEnd, "1d")
     dataArrayDay = functions.dataTextToArray(responseDay.text)
-    print (dataArrayDay)
+    # print (dataArrayDay)
 
     arrWilliamsR = functions.arrayWilliamsR(dataArrayDay, 50)
     arrRSI = functions.arrayRSI(dataArrayDay, 60)
@@ -68,7 +69,7 @@ for value in all.values:
     process = process + 1
     pbar.update(1)
 
-    #if process > 10:
+    # if process > 10:
     #    break
 
 
@@ -82,6 +83,7 @@ resultDF = pd.DataFrame(resultDic)
 pbar.close()
 
 # print (resultDF)
+resultDF.to_excel('excel_output.xls',sheet_name='biubiu')
 
 accordDic = resultDF[resultDF.monthRSI > 77]
 accordDic = accordDic[accordDic.dayRSI > 57]
