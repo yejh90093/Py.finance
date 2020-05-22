@@ -1,3 +1,5 @@
+import os
+
 import numpy
 import requests
 import datetime
@@ -69,8 +71,8 @@ for value in all.values:
     process = process + 1
     pbar.update(1)
 
-    # if process > 10:
-    #    break
+    #if process > 10:
+    #   break
 
 
 resultDic['monthRSI'] = monthRSIArr
@@ -81,12 +83,17 @@ resultDic[all.keys()[0]] = tempArr
 
 resultDF = pd.DataFrame(resultDic)
 pbar.close()
-
 # print (resultDF)
-resultDF.to_excel('excel_output.xls',sheet_name='biubiu')
+
+
+currentDate = datetime.datetime.utcnow()
+currentDateStr = currentDate.strftime("%Y-%m-%d")
+
+resultDF.to_excel('all_results_last.xls', sheet_name=currentDateStr)
 
 accordDic = resultDF[resultDF.monthRSI > 77]
 accordDic = accordDic[accordDic.dayRSI > 57]
 accordDic = accordDic[accordDic.dayWilliamsR < 20]
 
 print (accordDic)
+functions.append_df_to_excel('log_results.xlsx', accordDic, sheet_name=currentDateStr, index=False)
