@@ -31,6 +31,7 @@ def readAll():
 
 # Valid intervals: [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
 def getFinanceData(id, start, end, interval):
+    # id = "1467"
     site = "https://query1.finance.yahoo.com/v7/finance/download/" + id + ".TW?" \
                                                                           "period1=" + end + \
            "&period2=" + start + \
@@ -145,6 +146,60 @@ def arrayRSI(dataArray, nDay):
     return arrRSI
 
 
+def arrayDMI(dataArray, nDay):
+    arrDMI = []
+    n = 0
+    # nDay = nDay - 1
+    for day in dataArray:
+        plusDM = 0
+        minusDM = 0
+        plusDI = 0
+        minusDI = 0
+
+        Ht_Lt = 0
+        Ht_Ct_1 = 0
+        Lt_Ct_1 = 0
+        TR = 0
+
+        if n >= nDay:
+
+            plusDM = dataArray[n][2] - dataArray[n - 1][2]
+            minusDM = dataArray[n - 1][3] - dataArray[n][3]
+
+            Ht_Lt = dataArray[n][2] - dataArray[n][3]
+            Ht_Ct_1 = dataArray[n][2] - dataArray[n - 1][4]
+            Lt_Ct_1 = dataArray[n][3] - dataArray[n - 1][4]
+            Lt_Ct_1 = Lt_Ct_1 if Lt_Ct_1 > 0 else 0
+
+            TR = max(Ht_Lt, Ht_Ct_1, Lt_Ct_1)
+
+            if TR == 0:
+                plusDI = 0
+                minusDI = 0
+            else:
+                plusDI = plusDM / TR * 100
+                minusDI = minusDM / TR * 100
+
+            # Normalize DI
+            plusDI = plusDI if plusDI > 0 else 0
+            minusDI = minusDI if minusDI > 0 else 0
+            # Normalize DI
+
+            A = numpy.array([plusDI, minusDI])
+            B = dataArray[n]
+            B = numpy.append(B, A)
+            arrDMI.append(B)
+        else:
+            B = dataArray[n]
+            A = numpy.array([None, None])
+            B = numpy.append(B, A)
+            arrDMI.append(B)
+
+        # print (n, dataArray[n][0], A)
+        n = n + 1
+
+    return arrDMI
+
 
 def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
                        truncate_sheet=False,
@@ -184,7 +239,6 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
     except NameError:
         FileNotFoundError = IOError
 
-
     try:
         # try to open an existing workbook
         writer.book = load_workbook(filename)
@@ -204,7 +258,7 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
             writer.book.create_sheet(sheet_name, idx)
 
         # copy existing sheets
-        writer.sheets = {ws.title:ws for ws in writer.book.worksheets}
+        writer.sheets = {ws.title: ws for ws in writer.book.worksheets}
     except FileNotFoundError:
         # file does not exist yet, we will create it
         pass
