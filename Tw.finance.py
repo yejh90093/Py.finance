@@ -28,6 +28,7 @@ nameArr = []
 dayWilliamsRArr = []
 dayRSIArr = []
 monthRSIArr = []
+monthMTMArr = []
 monthDMIArr_plus = []
 monthDMIArr_minus = []
 process = 0
@@ -72,6 +73,7 @@ for value in all.values:
 
     arrRSIMonth = functions.arrayRSI(dataArrayMonth, 4)
     arrDMIMonth = functions.arrayDMI(dataArrayMonth, 1)
+    arrMTMMonth = functions.arrayMTM(dataArrayMonth, 3, 2)
     if len(arrRSIMonth) <= 1:
         monthRSI = None
     else:
@@ -83,17 +85,24 @@ for value in all.values:
         monthDMI_plus = arrDMIMonth[len(arrDMIMonth) - 1][7]
         monthDMI_minus = arrDMIMonth[len(arrDMIMonth) - 1][8]
 
+    if len(arrMTMMonth) <= 1:
+        monthMTM = None
+    else:
+        monthMTM = arrMTMMonth[len(arrMTMMonth) - 1][9]
+
     monthRSIArr.append(monthRSI)
+    monthMTMArr.append(monthMTM)
     monthDMIArr_plus.append(monthDMI_plus)
     monthDMIArr_minus.append(monthDMI_minus)
 
     process = process + 1
     pbar.update(1)
 
-    # if process > 100:
+    #if process > 10:
     #    break
 
 resultDic['monthRSI'] = monthRSIArr
+resultDic['monthMTM'] = monthMTMArr
 resultDic['monthDMI_plus'] = monthDMIArr_plus
 resultDic['monthDMI_minus'] = monthDMIArr_minus
 resultDic['dayRSI'] = dayRSIArr
@@ -109,7 +118,7 @@ pbar.close()
 currentDate = datetime.datetime.utcnow()
 currentDateStr = currentDate.strftime("%Y-%m-%d")
 resultDF = resultDF.reindex(
-    columns=['證券代號', '證券名稱', 'dayWilliamsR', 'dayRSI', 'monthRSI', 'monthDMI_plus', 'monthDMI_minus'])
+    columns=['證券代號', '證券名稱', 'dayWilliamsR', 'dayRSI', 'monthRSI', 'monthDMI_plus', 'monthDMI_minus', 'monthMTM'])
 
 resultDF.to_excel('all_results_last.xls', sheet_name=currentDateStr)
 
@@ -118,7 +127,7 @@ accordDic = accordDic[accordDic.dayRSI > 57]
 accordDic = accordDic[accordDic.dayWilliamsR < 20]
 
 accordDic = accordDic.reindex(
-    columns=['證券代號', '證券名稱', 'dayWilliamsR', 'dayRSI', 'monthRSI', 'monthDMI_plus', 'monthDMI_minus'])
+    columns=['證券代號', '證券名稱', 'dayWilliamsR', 'dayRSI', 'monthRSI', 'monthDMI_plus', 'monthDMI_minus', 'monthMTM'])
 pd.set_option('display.max_columns', 8)
 print(accordDic)
 functions.append_df_to_excel('log_results.xlsx', accordDic, sheet_name=currentDateStr, index=False)

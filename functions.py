@@ -31,7 +31,7 @@ def readAll():
 
 # Valid intervals: [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
 def getFinanceData(id, start, end, interval):
-    # id = "1467"
+    #id = "4142"
     site = "https://query1.finance.yahoo.com/v7/finance/download/" + id + ".TW?" \
                                                                           "period1=" + end + \
            "&period2=" + start + \
@@ -201,6 +201,42 @@ def arrayDMI(dataArray, nDay):
     return arrDMI
 
 
+def arrayMTM(dataArray, nMTM, nMA):
+    arrMTM = []
+    n = 0
+    MA = None
+    MTM_MA_result = None
+
+    for day in dataArray:
+        if n >= nMTM:
+            MTM = dataArray[n][4] - dataArray[n - nMTM][4]
+
+            if n >= nMTM + nMA:
+                sum_MA = 0
+                for i in range(n, n - nMA, -1):
+                    sum_MA += dataArray[i][4] - dataArray[i - nMTM][4]
+                MA = sum_MA / nMA
+                MTM_MA_result = "●" if (MTM > MA) else ""
+
+            A = numpy.array([MTM, MA, MTM_MA_result])
+            B = dataArray[n]
+            B = numpy.append(B, A)
+            arrMTM.append(B)
+        else:
+            B = dataArray[n]
+            A = numpy.array([None, None, None])
+            B = numpy.append(B, A)
+            arrMTM.append(B)
+
+        #print (n, dataArray[n][0], A)
+        n = n + 1
+
+
+
+
+    return arrMTM
+
+
 def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
                        truncate_sheet=False,
                        **to_excel_kwargs):
@@ -268,6 +304,5 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
 
     # write out the new sheet
     df.to_excel(writer, sheet_name, startrow=startrow, **to_excel_kwargs)
-
     # save the workbook
     writer.save()
