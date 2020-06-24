@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "tw-finance",
+  "private_key_id": "f09c6b5d4a8c237e4e7fcad90e1f7bf577a4be85",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDO1a57BqpTkEpp\nuLwfpoQvI/G6ksAuvVe6vcOwVWSGfx+obhQIqGSn1nRvDtnfAMI5b/I4A4qb1m6P\nF260iWyisg1KeYWh21WOEHj5p8g9saps+RJC1U0KMc3iss4TpqNLjJW7+IgbtH15\npzbobtT6KkF0QKIRbUbvQcA4R4IotB0kY/26Ue438mObl/x4A/c5WsAkk5AAkG5H\neLcPN9rrm+Gj0omXpXs6U+ybbMwOMgssDYTuGkraqco59DbchRhPlHRE76iBYhnk\n8CsH3CpnsCwTG9c5kgqMWM70A2S1YxBVw0je/UDMTpSBY1XTabe5YA9NXH0oIIgU\nnvrz0efZAgMBAAECggEAUngq6Mzgjw8iTIMnJ2uKmw027hBjZn+Cgmf1pdJ2kZYQ\ndmTlwgn6kF1W8Y03W85+os47AxCObNKUJKPQNVXyJfDekcpgeQfuVgXFZq36jnbP\noEGzgUhxPlZbZD+tIXK4+3+jmF5hTsKpoR8GKqk+bDz6+jJnLJGoze8miIoioL1w\nuKR4JEeF6otZkFYTSUXOlYO9+xIDEKuX4l4uT6GXWJook/Gl/2AAYPW/jQ6aFc0K\nhchz/coqCGE7hwPlP5nUIvwlC0Tx5akEgTt2OtJMUL0MUIqjMx+V28X1QZCHV5ZW\nzLnPsO3w5jnzBGypilRuzpAOCjy5RbRWoSl7hf14LQKBgQDpRwCAdEPxV4imBcJ1\nUb4zC/sa4iaBFIvM+RKRBYH4q8pFsV0ZeestGotB21g1Rd5CYVGJDtCaMfd+rJx7\nHEyJKcAWCZQCmlImfF/f8Pfq8xTgNww40ITL7nMXCrCFmQp2I4cKMnMvWZbL1Gn6\nCy+FOAL4JU+cUQBYby55CBJYuwKBgQDi+05hHsDRCQmpkE/uyU9R0O2JldsGpZKc\nDjg27fACJVBCpfkT+iBP0cLNsoerp9H+Rjug5ZXuMnTUuXGYJ3z5BgbDNA87P69X\n0DbLis1U8wVYmXZ/WNmWFr4Zkg5Vhf9yndZapXg62QR7CE2K7yZ3F7xoR+RnGeeM\nLo3mpZpyewKBgBOgf7BPF/BUVxDw5x2L1R7iYSwv3uF5YxHJ2wAMoJTVj10xwQ2F\nrn3K//B4jgFdcYfQPFX1wyNWFOa5iyjohp/7vUedYrCdX1ARotdqpNFFxnne585X\n7PRjiZdktNlouPKbpp77A6n2NbPMmWYKTuM8hTNvoDUcs5S9NgHE5hZFAoGAVyEK\nnENW1qb2e4128X17IjfmBstscSe7mIXo1EUPvXMfVQYrD50TLDCj65vdcmoQNOA2\n4XNf0zixGjs5PKPj2B+VFvdz5VVz9GxrrERSv4ouAi2ejBHKLE/8lwo20GOIhDHM\nZ61e8o/9pVCxm2RjypFk9E6sgVszQ99W/zOQjuMCgYAvpR7hEf746eg1sGmKDgK/\nYHzp+1q9F3bVYFxpSgL9abUf6Ri7MlST9xfZor5ibVKw+EKdzZIx0qseQJOsIKPz\nTBiUfRK6+2TLZeFC9NtvgSUX1H2p0lQfNgCOs0/0jRPp+i1BPitqAHTBv9ePV+jZ\nshGkUQPT+C5gPYYnetqDeQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "tw-finance-admin@tw-finance.iam.gserviceaccount.com",
+  "client_id": "116813445946277858918",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/tw-finance-admin%40tw-finance.iam.gserviceaccount.com"
+}

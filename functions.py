@@ -39,7 +39,7 @@ def getFinanceData(id, start, end, interval):
            "&events=history" \
            "&crumb=hP2rOschxO0"
     response = requests.get(site)
-    # print(site)
+    #print(site)
     return response
 
 
@@ -213,10 +213,12 @@ def arrayMTM(dataArray, nMTM, nMA):
 
             if n >= nMTM + nMA:
                 sum_MA = 0
+                MTM_direct = dataArray[n-1][4] - dataArray[n - nMTM -1][4]
+
                 for i in range(n, n - nMA, -1):
                     sum_MA += dataArray[i][4] - dataArray[i - nMTM][4]
                 MA = sum_MA / nMA
-                MTM_MA_result = "●" if (MTM > MA) else ""
+                MTM_MA_result = "●" if (MTM > MA and MTM > 0 and MTM > MTM_direct) else ""
 
             A = numpy.array([MTM, MA, MTM_MA_result])
             B = dataArray[n]
