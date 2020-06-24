@@ -10,9 +10,11 @@ import functions
 import xlwt
 import numpy as np
 from tqdm import tqdm
+import gspread
+from gspread_dataframe import set_with_dataframe
+from oauth2client.service_account import ServiceAccountCredentials
 
 pbar = tqdm(total=972)
-
 now = datetime.datetime.now()
 
 dayStart = str(int(time.time()))
@@ -43,11 +45,17 @@ for value in all.values:
     nameArr.append(value[1])
 
     responseDay = functions.getFinanceData(value[0], dayStart, dayEnd, "1d")
-    dataArrayDay = functions.dataTextToArray(responseDay.text)
-    # print (dataArrayDay)
+    try:
+        dataArrayDay = functions.dataTextToArray(responseDay.text)
+    except:
+        # print("ERROR: dataTextToArray responseDay. ", responseDay.text)
+        print("ERROR: dataTextToArray responseDay. Invalid cookie.")
+        exit(1)
 
-    #responseWeek = functions.getFinanceData(value[0], dayStart, dayEnd, "1wk")
-    #dataArrayWeek = functions.dataTextToArray(responseWeek.text)
+        # print (dataArrayDay)
+
+    # responseWeek = functions.getFinanceData(value[0], dayStart, dayEnd, "1wk")
+    # dataArrayWeek = functions.dataTextToArray(responseWeek.text)
     # print (dataArrayWeek)
 
     arrWilliamsR = functions.arrayWilliamsR(dataArrayDay, 50)
@@ -61,7 +69,11 @@ for value in all.values:
 
     responseMonth = functions.getFinanceData(value[0], dayStart, monthEnd, "1mo")
     # responseMonth = functions.getFinanceData('2330', dayStart, monthEnd, "1mo")
-    dataArrayMonth = functions.dataTextToArray(responseMonth.text)
+
+    try:
+        dataArrayMonth = functions.dataTextToArray(responseMonth.text)
+    except:
+        print("ERROR: dataTextToArray responseMonth. ", responseMonth.text)
 
     arrSize = len(dataArrayMonth)
     if arrSize >= 2:
@@ -102,7 +114,7 @@ for value in all.values:
     process = process + 1
     pbar.update(1)
 
-    #if process > 10:
+    # if process > 10:
     #    break
 
 resultDic['monthRSI'] = monthRSIArr
@@ -133,5 +145,17 @@ accordDic = accordDic[accordDic.dayWilliamsR < 20]
 accordDic = accordDic.reindex(
     columns=['證券代號', '證券名稱', 'dayWilliamsR', 'dayRSI', 'monthRSI', 'monthDMI_plus', 'monthDMI_minus', 'monthMTM'])
 pd.set_option('display.max_columns', 8)
-print(accordDic)
+# print(accordDic)
 functions.append_df_to_excel('log_results.xlsx', accordDic, sheet_name=currentDateStr, index=False)
+
+scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+credentials = ServiceAccountCredentials.from_json_keyfile_name('tw-finance-f09c6b5d4a8c.json', scope)
+gc = gspread.authorize(credentials)
+
+# 選擇試算表，我們創的試算表名稱叫做『我的投資情報專頁』
+sh = gc.open('Tw-finance')
+try:
+    ws = sh.add_worksheet(title=currentDateStr, rows='1000', cols='12')
+    set_with_dataframe(ws, accordDic, row=1, col=1, include_index=True, include_column_header=True)
+except:
+    print(currentDateStr + " Data Already Exist.")
