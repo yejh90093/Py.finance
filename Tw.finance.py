@@ -14,9 +14,36 @@ import gspread
 from gspread_dataframe import set_with_dataframe
 from oauth2client.service_account import ServiceAccountCredentials
 
+debug_mode = False
+save_local_file = False
+jump_phase_two = False
+
+currentDate = datetime.datetime.utcnow()
+dateStr = currentDate.strftime("%Y-%m-%d") if not debug_mode else "Debug-" + currentDate.strftime("%Y-%m-%d")
+
+scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+credentials = ServiceAccountCredentials.from_json_keyfile_name('tw-finance-f09c6b5d4a8c.json', scope)
+gc = gspread.authorize(credentials)
+sh = gc.open('Tw-finance')
+
+try:
+    if debug_mode:
+        try:
+            ws = sh.worksheet(dateStr)
+            sh.del_worksheet(ws)
+            print("Delete exist sheet: " + dateStr)
+        except:
+            print("Create new sheet: " + dateStr)
+
+    ws = sh.add_worksheet(title=dateStr, rows='1000', cols='12')
+except Exception as e:
+    print(e)
+    print("Cannot add worksheet. Please check if the sheet already exist.")
+    exit(1)
+
+
 pbar = tqdm(total=972)
 now = datetime.datetime.now()
-
 dayStart = str(int(time.time()))
 dayEnd = str(int(time.time()) - 8640000)
 monthEnd = str(int(time.time()) - 686400000)
@@ -38,9 +65,6 @@ process = 0
 # print(all.keys())
 
 for value in all.values:
-    # value[0] = "4142"
-    # print (process, value[0], value[1])
-
     tempArr.append(value[0])
     nameArr.append(value[1])
 
@@ -48,15 +72,10 @@ for value in all.values:
     try:
         dataArrayDay = functions.dataTextToArray(responseDay.text)
     except:
-        # print("ERROR: dataTextToArray responseDay. ", responseDay.text)
+        sh.del_worksheet(ws)
+        print()
         print("ERROR: dataTextToArray responseDay. Invalid cookie.")
         exit(1)
-
-        # print (dataArrayDay)
-
-    # responseWeek = functions.getFinanceData(value[0], dayStart, dayEnd, "1wk")
-    # dataArrayWeek = functions.dataTextToArray(responseWeek.text)
-    # print (dataArrayWeek)
 
     arrWilliamsR = functions.arrayWilliamsR(dataArrayDay, 50)
     arrRSI = functions.arrayRSI(dataArrayDay, 60)
@@ -68,12 +87,14 @@ for value in all.values:
     dayRSIArr.append(dayRSI)
 
     responseMonth = functions.getFinanceData(value[0], dayStart, monthEnd, "1mo")
-    # responseMonth = functions.getFinanceData('2330', dayStart, monthEnd, "1mo")
 
     try:
         dataArrayMonth = functions.dataTextToArray(responseMonth.text)
     except:
-        print("ERROR: dataTextToArray responseMonth. ", responseMonth.text)
+        sh.del_worksheet(ws)
+        print()
+        print("ERROR: dataTextToArray responseMonth. Invalid cookie.")
+        exit(1)
 
     arrSize = len(dataArrayMonth)
     if arrSize >= 2:
@@ -114,8 +135,8 @@ for value in all.values:
     process = process + 1
     pbar.update(1)
 
-    # if process > 10:
-    #    break
+    if debug_mode and process > 30:
+        break
 
 resultDic['monthRSI'] = monthRSIArr
 resultDic['monthMTM'] = monthMTMArr
@@ -131,31 +152,50 @@ pbar.close()
 # print (resultDF)
 
 
-currentDate = datetime.datetime.utcnow()
-currentDateStr = currentDate.strftime("%Y-%m-%d")
 resultDF = resultDF.reindex(
     columns=['證券代號', '證券名稱', 'dayWilliamsR', 'dayRSI', 'monthRSI', 'monthDMI_plus', 'monthDMI_minus', 'monthMTM'])
-
-resultDF.to_excel('all_results_last.xls', sheet_name=currentDateStr)
-
 accordDic = resultDF[resultDF.monthRSI > 77]
 accordDic = accordDic[accordDic.dayRSI > 57]
 accordDic = accordDic[accordDic.dayWilliamsR < 20]
 
-accordDic = accordDic.reindex(
-    columns=['證券代號', '證券名稱', 'dayWilliamsR', 'dayRSI', 'monthRSI', 'monthDMI_plus', 'monthDMI_minus', 'monthMTM'])
-pd.set_option('display.max_columns', 8)
 # print(accordDic)
-functions.append_df_to_excel('log_results.xlsx', accordDic, sheet_name=currentDateStr, index=False)
 
-scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-credentials = ServiceAccountCredentials.from_json_keyfile_name('tw-finance-f09c6b5d4a8c.json', scope)
-gc = gspread.authorize(credentials)
+if save_local_file:
+    resultDF.to_excel('all_results_last.xls', sheet_name=dateStr)
+    functions.append_df_to_excel('log_results.xlsx', accordDic, sheet_name=dateStr, index=False)
 
-# 選擇試算表，我們創的試算表名稱叫做『我的投資情報專頁』
-sh = gc.open('Tw-finance')
-try:
-    ws = sh.add_worksheet(title=currentDateStr, rows='1000', cols='12')
-    set_with_dataframe(ws, accordDic, row=1, col=1, include_index=True, include_column_header=True)
-except:
-    print(currentDateStr + " Data Already Exist.")
+set_with_dataframe(ws, accordDic, row=1, col=1, include_index=True, include_column_header=True)
+# print(accordDic)
+
+listMACDWeekDiff = []
+listMACDWeekDirection = []
+
+pbar_MACD = tqdm(total=len(accordDic))
+
+
+for index, row in accordDic.iterrows():
+    # print(index, row['證券代號'], row['證券名稱'])
+    responseWeek = functions.getFinanceData(row['證券代號'], dayStart, monthEnd, "1mo")
+
+    try:
+        dataArrayWeek = functions.dataTextToArray(responseWeek.text)
+    except:
+        # sh.del_worksheet(ws)
+        print()
+        print("ERROR: dataTextToArray responseMonth. Invalid cookie.")
+        exit(1)
+
+    arrMACDWeek = functions.arrayMACD(dataArrayWeek, 12, 26, 9)
+    if len(arrMACDWeek)>0:
+        #print(arrMACDWeek[len(arrMACDWeek)-1])
+        listMACDWeekDiff.append(arrMACDWeek[len(arrMACDWeek)-1][9])
+        listMACDWeekDirection.append(arrMACDWeek[len(arrMACDWeek)-1][10])
+    pbar_MACD.update(1)
+
+accordDic['MACD_Diff'] = list(pd.Series(listMACDWeekDiff))
+accordDic['MACD_Direction'] = list(pd.Series(listMACDWeekDirection))
+
+#print(accordDic)
+set_with_dataframe(ws, accordDic, row=1, col=1, include_index=True, include_column_header=True)
+
+pbar_MACD.close()

@@ -45,7 +45,7 @@ def getFinanceData(id, start, end, interval):
 
 def dataTextToArray(text):
     df = pd.read_csv(StringIO(text))
-    return df.values
+    return df.dropna().values
 
 
 def arrayWilliamsR(dataArray, nDay):
@@ -233,11 +233,63 @@ def arrayMTM(dataArray, nMTM, nMA):
         #print (n, dataArray[n][0], A)
         n = n + 1
 
-
-
-
     return arrMTM
 
+
+def arrayMACD(dataArray, ema1, ema2, diff):
+
+    arrMACD = []
+    n = 0
+    last_ema1 = 0
+    curr_ema1 = 0
+    last_ema2 = 0
+
+    last_diff = 0
+    curr_diff = 0
+    direction = ""
+
+    for data in dataArray:
+
+        if n >= ema1:
+
+            if n == ema1:
+                #print (dataArray[0:ema1, 4])
+                curr_ema1 = np.nansum(dataArray[0:ema1, 4])/ema1
+                last_ema1 = curr_ema1
+            else:
+                curr_ema1 = (1-(2/(ema1+1))) * last_ema1 + (2/(ema1+1)) * (dataArray[n-1][4])
+                last_ema1 = curr_ema1
+
+            if n >= ema2:
+                if n == ema2:
+                    #print(dataArray[0:ema2, 4])
+                    curr_ema2 = np.nansum(dataArray[0:ema2, 4])/ema2
+                    last_ema2 = curr_ema2
+                else:
+                    curr_ema2 = (1-(2/(ema2+1))) * last_ema2 + (2/(ema2+1)) * (dataArray[n-1][4])
+                    last_ema2 = curr_ema2
+
+                curr_diff = curr_ema1 - curr_ema2
+                direction = "↗" if (curr_diff > last_diff) else "↘"
+                direction = "=" if (curr_diff == last_diff) else direction
+                last_diff = curr_diff
+                A = numpy.array([curr_ema1, curr_ema2, curr_diff, direction])
+            else:
+                A = numpy.array([curr_ema1, None, None, None])
+
+            B = dataArray[n]
+            B = numpy.append(B, A)
+            arrMACD.append(B)
+        else:
+            B = dataArray[n]
+            A = numpy.array([None, None, None, None])
+            B = numpy.append(B, A)
+            arrMACD.append(B)
+
+        # print (n, dataArray[n], A)
+        n = n + 1
+
+    return arrMACD
 
 def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
                        truncate_sheet=False,
