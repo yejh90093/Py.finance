@@ -17,6 +17,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 debug_mode = False
 save_local_file = False
 jump_phase_two = False
+start_index = 800
 
 currentDate = datetime.datetime.utcnow()
 dateStr = currentDate.strftime("%Y-%m-%d") if not debug_mode else "Debug-" + currentDate.strftime("%Y-%m-%d")
@@ -65,6 +66,11 @@ process = 0
 # print(all.keys())
 
 for value in all.values:
+    pbar.update(1)
+
+    if debug_mode and pbar.n < start_index:
+        continue
+
     tempArr.append(value[0])
     nameArr.append(value[1])
 
@@ -75,7 +81,7 @@ for value in all.values:
         sh.del_worksheet(ws)
         print()
         print("ERROR: dataTextToArray responseDay. Invalid cookie.")
-        exit(1)
+        break #exit(1)
 
     arrWilliamsR = functions.arrayWilliamsR(dataArrayDay, 50)
     arrRSI = functions.arrayRSI(dataArrayDay, 60)
@@ -94,7 +100,7 @@ for value in all.values:
         sh.del_worksheet(ws)
         print()
         print("ERROR: dataTextToArray responseMonth. Invalid cookie.")
-        exit(1)
+        break #exit(1)
 
     arrSize = len(dataArrayMonth)
     if arrSize >= 2:
@@ -133,7 +139,6 @@ for value in all.values:
     monthDMIArr_minus.append(monthDMI_minus)
 
     process = process + 1
-    pbar.update(1)
 
     if debug_mode and process > 30:
         break
