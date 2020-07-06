@@ -5,7 +5,8 @@ from functools import partial
 from tkmacosx import Button
 
 Define_variable.window_label.pack(pady=20);
-
+ws_url = "https://docs.google.com/spreadsheets/d/1eFs26OMNcxY-t2r73WPq14J4qCpyq9Ezv-Ec6vDmBiU/edit#gid=0"
+Define_variable.window_label.bind("<Button-1>", lambda e: GUI_Functions.callback(ws_url))
 
 normal_run_btn = Button(Define_variable.window, text='Run', bg='black', fg='green', borderless=1,
                         command=partial(GUI_Functions.normal_run))
