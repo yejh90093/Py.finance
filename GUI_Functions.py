@@ -6,12 +6,14 @@ import Define_variable
 def callback(url):
     webbrowser.open_new(url)
 
+
 def checkSheetExist(sheetList, sheetName):
     exist = False
     for worksheet in sheetList:
         if worksheet.title == sheetName:
             exist = True
     return exist
+
 
 def normal_run():
     Define_variable.result_label.configure(text="Normal Run Start")
@@ -49,6 +51,11 @@ def normal_run():
 
     try:
 
+        if sheetExist:
+            ws = sh.worksheet(dateStr)
+        else:
+            ws = sh.add_worksheet(title=dateStr, rows='1000', cols='12')
+
         if debug_mode:
             print("debug_mode")
             try:
@@ -62,22 +69,17 @@ def normal_run():
         if sheetExist and overwrite_file:
             print(("sheetExist and overwrite_file"))
 
-
             ws = sh.worksheet(dateStr)
             sh.del_worksheet(ws)
             ws = sh.add_worksheet(title=dateStr, rows='1000', cols='12')
 
-
-
-
         if assign_start:
-            if sheetExist:
-                ws = sh.worksheet(dateStr)
-                insert_row_index = len(ws.get_all_records()) + 2
-            else:
-                ws = sh.add_worksheet(title=dateStr, rows='1000', cols='12')
+            print(("assign_start"))
+            insert_row_index = len(ws.get_all_records()) + 2
 
-        ws_url = "https://docs.google.com/spreadsheets/d/1eFs26OMNcxY-t2r73WPq14J4qCpyq9Ezv-Ec6vDmBiU/edit#gid=" + str(ws.id)
+
+        ws_url = "https://docs.google.com/spreadsheets/d/1eFs26OMNcxY-t2r73WPq14J4qCpyq9Ezv-Ec6vDmBiU/edit#gid=" + str(
+            ws.id)
         Define_variable.window_label.bind("<Button-1>", lambda e: callback(ws_url))
 
     except Exception as e:
@@ -85,7 +87,7 @@ def normal_run():
         print("Cannot add worksheet. Please check if the sheet already exist.")
         exit(1)
 
-    total = 972 #- start_index
+    total = 972  # - start_index
     pbar = tqdm(total=total)
     now = datetime.datetime.now()
     dayStart = str(int(time.time()))
@@ -117,8 +119,6 @@ def normal_run():
 
         if assign_start and pbar.n < start_index:
             continue
-
-
 
         tempArr.append(value[0])
         nameArr.append(value[1])
@@ -247,7 +247,10 @@ def normal_run():
     accordDic['MACD_Diff'] = list(pd.Series(listMACDWeekDiff))
     accordDic['MACD_Direction'] = list(pd.Series(listMACDWeekDirection))
 
-    # print(accordDic)
+    if save_local_file:
+        resultDF.to_excel('all_results_last.xls', sheet_name=dateStr)
+        functions.append_df_to_excel('log_results.xlsx', accordDic, sheet_name=dateStr, index=False)
+
     set_with_dataframe(ws, accordDic, row=insert_row_index, col=1, include_index=True, include_column_header=True)
 
     pbar_MACD.close()
