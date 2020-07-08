@@ -84,6 +84,7 @@ def normal_run():
     now = datetime.datetime.now()
     dayStart = str(int(time.time()))
     dayEnd = str(int(time.time()) - 8640000)
+    day200End = str(int(time.time()) - 40000000)
     monthEnd = str(int(time.time()) - 686400000)
 
     all = functions.readAll()
@@ -214,30 +215,34 @@ def normal_run():
 
     listMACDWeekDiff = []
     listMACDWeekDirection = []
+    listMACDDayDiff = []
+    listMACDDayDirection = []
 
     pbar_MACD = tqdm(total=len(accordDic))
 
     for index, row in accordDic.iterrows():
         # print(index, row['證券代號'], row['證券名稱'])
-        responseWeek = functions.getFinanceData(row['證券代號'], dayStart, monthEnd, "1mo")
+        responseDay = functions.getFinanceData(row['證券代號'], dayStart, day200End, "1d")
 
         try:
-            dataArrayWeek = functions.dataTextToArray(responseWeek.text)
+            dataArrayDay = functions.dataTextToArray(responseDay.text)
         except:
             # sh.del_worksheet(ws)
             print()
             print("ERROR: dataTextToArray responseMonth. Invalid cookie.")
             exit(1)
 
-        arrMACDWeek = functions.arrayMACD(dataArrayWeek, 12, 26, 9)
-        if len(arrMACDWeek) > 0:
+        arrMACDDay = functions.arrayMACD(dataArrayDay, 200, 201, 202)
+        print(len, len(arrMACDDay))
+        # arrMACDWeek = functions.arrayMACD(dataArrayDay, 12, 26, 9)
+        if len(arrMACDDay) > 0:
             # print(arrMACDWeek[len(arrMACDWeek)-1])
-            listMACDWeekDiff.append(arrMACDWeek[len(arrMACDWeek) - 1][9])
-            listMACDWeekDirection.append(arrMACDWeek[len(arrMACDWeek) - 1][10])
+            listMACDDayDiff.append(arrMACDDay[len(arrMACDDay) - 1][9])
+            listMACDDayDirection.append(arrMACDDay[len(arrMACDDay) - 1][10])
         pbar_MACD.update(1)
 
-    accordDic['MACD_Diff'] = list(pd.Series(listMACDWeekDiff))
-    accordDic['MACD_Direction'] = list(pd.Series(listMACDWeekDirection))
+    accordDic['MACD_Day_Diff'] = list(pd.Series(listMACDDayDiff))
+    accordDic['MACD_Day_Direction'] = list(pd.Series(listMACDDayDirection))
 
     if save_local_file:
         resultDF.to_excel('all_results_last.xls', sheet_name=dateStr)
