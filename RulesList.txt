@@ -1,0 +1,31 @@
+
+dayWilliamsR:
+    arrWilliamsR = functions.arrayWilliamsR(dataArrayDay, 50)
+    accordDic = accordDic[accordDic.dayWilliamsR < 20]
+-----------------------------------------------------------------
+
+dayRSIArr:
+    arrRSI = functions.arrayRSI(dataArrayDay, 60)
+    accordDic = accordDic[accordDic.dayRSI > 57]
+-----------------------------------------------------------------
+
+arrRSIMonth:
+    arrRSIMonth = functions.arrayRSI(dataArrayMonth, 4)
+    accordDic = resultDF[resultDF.monthRSI > 77]
+-----------------------------------------------------------------
+
+arrDMIMonth:
+    arrDMIMonth = functions.arrayDMI(dataArrayMonth, 1)
+-----------------------------------------------------------------
+
+arrMTMMonth:
+    arrMTMMonth = functions.arrayMTM(dataArrayMonth, 3, 2)
+    MTM_MA_result = "●" if (MTM > MA and MTM > 0 and MTM > MTM_direct) else ""
+-----------------------------------------------------------------
+
+arrMACDWeek
+    responseWeek = functions.getFinanceData(row['證券代號'], dayStart, monthEnd, "1mo")
+    arrMACDWeek = functions.arrayMACD(dataArrayWeek, 12, 26, 9)
+    direction = "↗" if (curr_diff > last_diff) else "↘"
+    direction = "=" if (curr_diff == last_diff) else direction
+-----------------------------------------------------------------

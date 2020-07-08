@@ -51,33 +51,25 @@ def normal_run():
 
     try:
 
-        if sheetExist:
-            ws = sh.worksheet(dateStr)
-        else:
-            ws = sh.add_worksheet(title=dateStr, rows='1000', cols='12')
-
         if debug_mode:
             print("debug_mode")
             try:
                 ws = sh.worksheet(dateStr)
                 sh.del_worksheet(ws)
-                ws = sh.add_worksheet(title=dateStr, rows='1000', cols='12')
                 print("Delete exist sheet: " + dateStr)
             except:
                 print("Create new sheet: " + dateStr)
 
         if sheetExist and overwrite_file:
             print(("sheetExist and overwrite_file"))
-
             ws = sh.worksheet(dateStr)
             sh.del_worksheet(ws)
-            ws = sh.add_worksheet(title=dateStr, rows='1000', cols='12')
 
         if assign_start:
             print(("assign_start"))
             insert_row_index = len(ws.get_all_records()) + 2
 
-
+        ws = sh.add_worksheet(title=dateStr, rows='1000', cols='12')
         ws_url = "https://docs.google.com/spreadsheets/d/1eFs26OMNcxY-t2r73WPq14J4qCpyq9Ezv-Ec6vDmBiU/edit#gid=" + str(
             ws.id)
         Define_variable.window_label.bind("<Button-1>", lambda e: callback(ws_url))
