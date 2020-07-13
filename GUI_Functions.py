@@ -69,7 +69,7 @@ def normal_run():
             print(("assign_start"))
             insert_row_index = len(ws.get_all_records()) + 2
 
-        ws = sh.add_worksheet(title=dateStr, rows='1000', cols='12')
+        ws = sh.add_worksheet(title=dateStr, rows='1000', cols='14')
         ws_url = "https://docs.google.com/spreadsheets/d/1eFs26OMNcxY-t2r73WPq14J4qCpyq9Ezv-Ec6vDmBiU/edit#gid=" + str(
             ws.id)
         Define_variable.window_label.bind("<Button-1>", lambda e: callback(ws_url))
@@ -86,6 +86,7 @@ def normal_run():
     dayEnd = str(int(time.time()) - 8640000)
     day200End = str(int(time.time()) - 40000000)
     monthEnd = str(int(time.time()) - 686400000)
+    minEnd = str(int(time.time()) - 600000)
 
     all = functions.readAll()
 
@@ -185,12 +186,12 @@ def normal_run():
         if debug_mode and process > 30:
             break
 
-    resultDic['monthRSI'] = monthRSIArr
-    resultDic['monthMTM'] = monthMTMArr
-    resultDic['monthDMI_plus'] = monthDMIArr_plus
-    resultDic['monthDMI_minus'] = monthDMIArr_minus
-    resultDic['dayRSI'] = dayRSIArr
-    resultDic['dayWilliamsR'] = dayWilliamsRArr
+    resultDic['month_RSI>77'] = monthRSIArr
+    resultDic['month_MTM'] = monthMTMArr
+    resultDic['month_DMI+'] = monthDMIArr_plus
+    resultDic['month_DMI-'] = monthDMIArr_minus
+    resultDic['day_RSI>57'] = dayRSIArr
+    resultDic['day_WilliamsR<20'] = dayWilliamsRArr
     resultDic[all.keys()[1]] = nameArr
     resultDic[all.keys()[0]] = tempArr
 
@@ -199,10 +200,12 @@ def normal_run():
     # print (resultDF)
 
     resultDF = resultDF.reindex(
-        columns=['證券代號', '證券名稱', 'dayWilliamsR', 'dayRSI', 'monthRSI', 'monthDMI_plus', 'monthDMI_minus', 'monthMTM'])
-    accordDic = resultDF[resultDF.monthRSI > 77]
-    accordDic = accordDic[accordDic.dayRSI > 57]
-    accordDic = accordDic[accordDic.dayWilliamsR < 20]
+        columns=['證券代號', '證券名稱',
+                 'day_WilliamsR<20', 'day_RSI>57', 'month_RSI>77',
+                 'month_DMI+', 'month_DMI-', 'month_MTM'])
+    accordDic = resultDF[resultDF['month_RSI>77'] > 77]
+    accordDic = accordDic[accordDic['day_RSI>57'] > 57]
+    accordDic = accordDic[accordDic['day_WilliamsR<20'] < 20]
 
     # print(accordDic)
 
@@ -218,22 +221,37 @@ def normal_run():
     listMACDDayDiff = []
     listMACDDayDirection = []
 
+    listKDMinRSV = []
+    listKDMinK = []
+    listKDMinD = []
+
+
+
     pbar_MACD = tqdm(total=len(accordDic))
 
     for index, row in accordDic.iterrows():
         # print(index, row['證券代號'], row['證券名稱'])
         responseDay = functions.getFinanceData(row['證券代號'], dayStart, day200End, "1d")
+        responseMin = functions.getFinanceChart(row['證券代號'], dayStart, minEnd, "1m")
 
         try:
             dataArrayDay = functions.dataTextToArray(responseDay.text)
+            dataArrayMin = functions.dataJsonToArray(responseMin.text)
         except:
             # sh.del_worksheet(ws)
             print()
-            print("ERROR: dataTextToArray responseMonth. Invalid cookie.")
+            print("ERROR: dataToArray responseDay. Invalid cookie.")
             exit(1)
 
+        arrKDMin = functions.arrayKD(dataArrayMin, 999)
+        if len(arrKDMin) > 0:
+            listKDMinRSV.append(arrKDMin[len(arrKDMin) - 1][5])
+            listKDMinK.append(arrKDMin[len(arrKDMin) - 1][6])
+            listKDMinD.append(arrKDMin[len(arrKDMin) - 1][7])
+
+
         arrMACDDay = functions.arrayMACD(dataArrayDay, 200, 201, 202)
-        print(len, len(arrMACDDay))
+        # print(len, len(arrMACDDay))
         # arrMACDWeek = functions.arrayMACD(dataArrayDay, 12, 26, 9)
         if len(arrMACDDay) > 0:
             # print(arrMACDWeek[len(arrMACDWeek)-1])
@@ -241,8 +259,12 @@ def normal_run():
             listMACDDayDirection.append(arrMACDDay[len(arrMACDDay) - 1][10])
         pbar_MACD.update(1)
 
-    accordDic['MACD_Day_Diff'] = list(pd.Series(listMACDDayDiff))
-    accordDic['MACD_Day_Direction'] = list(pd.Series(listMACDDayDirection))
+    accordDic['day_MACD200_diff'] = list(pd.Series(listMACDDayDiff))
+    accordDic['day_MACD200_direct'] = list(pd.Series(listMACDDayDirection))
+
+    accordDic['min_KD999_RSV'] = list(pd.Series(listKDMinRSV))
+    accordDic['min_KD999_K'] = list(pd.Series(listKDMinK))
+    accordDic['min_KD999_D'] = list(pd.Series(listKDMinD))
 
     if save_local_file:
         resultDF.to_excel('all_results_last.xls', sheet_name=dateStr)

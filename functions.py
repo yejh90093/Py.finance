@@ -1,4 +1,6 @@
 import datetime
+import json
+
 import numpy
 import requests
 from io import StringIO
@@ -42,9 +44,68 @@ def getFinanceData(id, start, end, interval):
     #print(site)
     return response
 
+# Valid intervals: [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
+def getFinanceChart(id, start, end, interval):
+    #id = "4142"
+    site = "https://query1.finance.yahoo.com/v8/finance/chart/" + id + ".TW?" \
+           "symbol=" + id + ".TW" + \
+           "&period1=" + end + \
+           "&period2=" + start + \
+           "&interval=" + interval + \
+           "&includePrePost=true" \
+           "&events=div%2Csplit"
+
+
+    response = requests.get(site)
+    #print(site)
+    return response
+
+# https://query1.finance.yahoo.com/v8/finance/chart/2330.TW?
+# symbol=2330.TW&period1=1594000000&period2=1594460555&interval=1m&includePrePost=true&events=div%2Csplit
 
 def dataTextToArray(text):
     df = pd.read_csv(StringIO(text))
+
+    for index, row in df.iterrows():
+        if row['Open'] is None:
+            df.at[index, 'Open'] = df.iloc[index-1]['Open']
+            df.at[index, 'High'] = df.iloc[index-1]['High']
+            df.at[index, 'Low'] = df.iloc[index-1]['Low']
+            df.at[index, 'Close'] = df.iloc[index-1]['Close']
+
+    return df.values
+
+def dataJsonToArray(text):
+    jsonData = json.loads(text)
+
+    arrTimestamp = jsonData['chart']['result'][0]['timestamp']
+    arrOpen = jsonData['chart']['result'][0]['indicators']['quote'][0]['open']
+    arrHigh = jsonData['chart']['result'][0]['indicators']['quote'][0]['high']
+    arrLow = jsonData['chart']['result'][0]['indicators']['quote'][0]['low']
+    arrClose = jsonData['chart']['result'][0]['indicators']['quote'][0]['close']
+    df = pd.DataFrame(np.vstack((arrTimestamp, arrOpen, arrHigh, arrLow, arrClose)).T)
+
+    tradingPost = jsonData['chart']['result'][0]['meta']['tradingPeriods']['post']
+    # print(tradingPost)
+
+    #finalTimestamp = tradingPost[len(tradingPost)-1][0]['start']
+    #finalClose = jsonData['chart']['result'][0]['meta']['regularMarketPrice']
+    #finalDf = pd.DataFrame([finalTimestamp, finalClose, finalClose, finalClose, finalClose])
+
+    # print(finalTimestamp)
+
+    #df = df.append(finalDf.T, ignore_index=True)
+    df.columns = ['timestamp', 'open', 'high', 'low', 'close']
+
+    for index, row in df.iterrows():
+        df.at[index, 'timestamp'] = datetime.datetime.fromtimestamp(int(row['timestamp']))
+        #if row['open'] is None:
+        #    df.at[index, 'open'] = df.iloc[index-1]['open']
+        #    df.at[index, 'high'] = df.iloc[index-1]['high']
+        #    df.at[index, 'low'] = df.iloc[index-1]['low']
+        #    df.at[index, 'close'] = df.iloc[index-1]['close']
+
+    # print(df)
     return df.dropna().values
 
 
@@ -82,6 +143,49 @@ def arrayWilliamsR(dataArray, nDay):
         n = n + 1
 
     return arrWilliamsR
+
+
+def arrayKD(dataArray, nRange):
+    arrKD = []
+    lastK = 0.5
+    lastD = 0.5
+    n = 0
+
+    for dataRow in dataArray:
+        RSV = 0
+        K = 0
+        D = 0
+
+        if n >= nRange:
+            nHigh = dataArray[n][2]
+            nLow = dataArray[n][3]
+
+            for i in range(n, n - nRange, -1):
+                nHigh = dataArray[i][2] if dataArray[i][2] > nHigh else nHigh
+                nLow = dataArray[i][3] if dataArray[i][3] < nLow else nLow
+
+            RSV = (dataArray[n][4] - nLow) / (nHigh - nLow) if (nHigh - nLow) > 0 else 1
+            K = (1/3) * RSV + (2/3) * lastK
+            D = (1/3) * K + (2/3) * lastD
+
+            lastK = K
+            lastD = D
+
+            A = numpy.array(['{:.2f}'.format(RSV*100), '{:.2f}'.format(K*100), '{:.2f}'.format(D*100)])
+            B = dataArray[n]
+            B = numpy.append(B, A)
+            arrKD.append(B)
+        else:
+            B = dataArray[n]
+            A = numpy.array([None, None, None])
+            B = numpy.append(B, A)
+            arrKD.append(B)
+
+        #print (n, dataArray[n][0], A)
+        n = n + 1
+
+    return arrKD
+
 
 
 def arrayRSI(dataArray, nDay):

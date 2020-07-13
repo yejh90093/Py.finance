@@ -29,3 +29,7 @@ arrMACDWeek
     direction = "↗" if (curr_diff > last_diff) else "↘"
     direction = "=" if (curr_diff == last_diff) else direction
 -----------------------------------------------------------------
+
+arrKDMin
+    responseMin = functions.getFinanceChart(row['證券代號'], dayStart, minEnd, "1m")
+    arrKDMin = functions.arrayKD(dataArrayMin, 999)
