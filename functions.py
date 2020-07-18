@@ -134,7 +134,7 @@ def arrayWilliamsR(dataArray, nDay):
             B = dataArray[n]
             W = (max(NH) - dataArray[n][4]) / (max(NH) - min(NL)) * 100
 
-            A = numpy.array([max(NH), min(NL), W])
+            A = numpy.array([round(max(NH),2), round(min(NL),2), round(W,2)])
 
             B = numpy.append(B, A)
 
@@ -171,7 +171,7 @@ def arrayKD(dataArray, nRange):
             lastK = K
             lastD = D
 
-            A = numpy.array(['{:.2f}'.format(RSV*100), '{:.2f}'.format(K*100), '{:.2f}'.format(D*100)])
+            A = numpy.array([round(RSV*100, 2), round(K*100, 2), round(D*100, 2)])
             B = dataArray[n]
             B = numpy.append(B, A)
             arrKD.append(B)
@@ -233,7 +233,7 @@ def arrayRSI(dataArray, nDay):
                 A = numpy.array([None])
             else:
                 dayRSI = avgPlus / (avgPlus + avgMinus)
-                A = numpy.array([dayRSI * 100])
+                A = numpy.array([round(dayRSI * 100, 2)])
 
             B = dataArray[n]
             B = numpy.append(B, A)
@@ -289,7 +289,7 @@ def arrayDMI(dataArray, nDay):
             minusDI = minusDI if minusDI > 0 else 0
             # Normalize DI
 
-            A = numpy.array([plusDI, minusDI])
+            A = numpy.array([round(plusDI, 2), round(minusDI, 2)])
             B = dataArray[n]
             B = numpy.append(B, A)
             arrDMI.append(B)
@@ -377,9 +377,9 @@ def arrayMACD(dataArray, ema1, ema2, diff):
                 direction = "↗" if (curr_diff > last_diff) else "↘"
                 direction = "=" if (curr_diff == last_diff) else direction
                 last_diff = curr_diff
-                A = numpy.array([curr_ema1, curr_ema2, curr_diff, direction])
+                A = numpy.array([round(curr_ema1, 2), round(curr_ema2, 2), round(curr_diff, 2), direction])
             else:
-                A = numpy.array([curr_ema1, None, None, None])
+                A = numpy.array([round(curr_ema1, 2), None, None, None])
 
             B = dataArray[n]
             B = numpy.append(B, A)

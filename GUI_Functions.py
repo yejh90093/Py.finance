@@ -67,6 +67,7 @@ def normal_run():
 
         if assign_start:
             print(("assign_start"))
+            ws = sh.worksheet(dateStr)
             insert_row_index = len(ws.get_all_records()) + 2
 
         ws = sh.add_worksheet(title=dateStr, rows='1000', cols='14')
@@ -183,7 +184,7 @@ def normal_run():
 
         process = process + 1
 
-        if debug_mode and process > 30:
+        if debug_mode and process > 300:
             break
 
     resultDic['month_RSI>77'] = monthRSIArr
